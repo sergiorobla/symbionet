@@ -88,17 +88,17 @@ export async function signMessage(message, privateJwk) {
 
   const encoder = new TextEncoder();
   const data = encoder.encode(message);
-
-  const signature = await window.crypto.subtle.sign(
-    {
-      name: "ECDSA",
-      hash: { name: "SHA-256" },
-    },
+  const rawSignature = await window.crypto.subtle.sign(
+    { name: "ECDSA", hash: { name: "SHA-256" } },
     privateKey,
     data
   );
+  // RAW (64 bytes) → DER
+  const derSignature = rawToDer(new Uint8Array(rawSignature));
+  const base64Signature = uint8ArrayToBase64(derSignature);
 
-  return new Uint8Array(signature);
+  // Enviar al backend:
+  await createPost(message, base64Signature, publicKeyJwk);
 }
 
 /**
