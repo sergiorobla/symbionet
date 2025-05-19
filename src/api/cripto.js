@@ -60,9 +60,52 @@ export async function loadKeyPair() {
   }
 }
 
-/**
- * Función de utilidad para firmar un mensaje con una clave privada JWK.
- */
+// Convierte una firma RAW (r|s) de 64 bytes a DER ASN.1
+function rawToDer(rawSig) {
+  const r = rawSig.slice(0, 32);
+  const s = rawSig.slice(32, 64);
+
+  function trimLeadingZeros(buf) {
+    let i = 0;
+    while (i < buf.length - 1 && buf[i] === 0) i++;
+    return buf.slice(i);
+  }
+
+  function toDERInt(buf) {
+    let v = trimLeadingZeros(buf);
+    if (v[0] & 0x80) {
+      const res = new Uint8Array(v.length + 1);
+      res[0] = 0x00;
+      res.set(v, 1);
+      return res;
+    }
+    return v;
+  }
+
+  const rDER = toDERInt(r);
+  const sDER = toDERInt(s);
+  const totalLength = 2 + rDER.length + 2 + sDER.length;
+  const der = new Uint8Array(2 + totalLength);
+  der[0] = 0x30;
+  der[1] = totalLength;
+  der[2] = 0x02;
+  der[3] = rDER.length;
+  der.set(rDER, 4);
+  der[4 + rDER.length] = 0x02;
+  der[5 + rDER.length] = sDER.length;
+  der.set(sDER, 6 + rDER.length);
+  return der;
+}
+
+// Convierte un Uint8Array a base64
+function uint8ArrayToBase64(uint8Array) {
+  let binary = "";
+  for (let i = 0; i < uint8Array.byteLength; i++) {
+    binary += String.fromCharCode(uint8Array[i]);
+  }
+  return btoa(binary);
+}
+
 export async function signMessage(message, privateJwk) {
   // Protección extra
   if (typeof privateJwk === "string") {
@@ -93,12 +136,9 @@ export async function signMessage(message, privateJwk) {
     privateKey,
     data
   );
-  // RAW (64 bytes) → DER
   const derSignature = rawToDer(new Uint8Array(rawSignature));
   const base64Signature = uint8ArrayToBase64(derSignature);
-
-  // Enviar al backend:
-  await createPost(message, base64Signature, publicKeyJwk);
+  return base64Signature;
 }
 
 /**

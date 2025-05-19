@@ -154,11 +154,9 @@ export default function Profile() {
         publicKey: publicKeyJwk,
       };
 
-      const rawSignature = await signMessage(message, privateKeyJwk);
-      const derSignature = rawToDer(rawSignature);
-      const base64Signature = uint8ArrayToBase64(derSignature);
+      const base64Signature = await signMessage(message, privateKeyJwk);
 
-      const res = await createPost(message, base64Signature, keys.publicKey);
+      const res = await createPost(message, base64Signature, publicKeyJwk);
       setPosts((prev) => [res.post, ...prev]);
       setMessage("");
     } catch (err) {
