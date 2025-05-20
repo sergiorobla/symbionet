@@ -90,13 +90,13 @@ export default function Register() {
       console.log("Respuesta del backend:", res);
       if (res?.accessToken && res?.user) {
         setAccessToken(res.accessToken);
-        console.log(
-          "Token guardado en sessionStorage:",
-          sessionStorage.getItem("accessToken")
-        );
         setUser(res.user);
         setPrivateKey(privateKey);
         localStorage.setItem("username", res.user.username);
+        console.log(
+          "Antes de navegar, token:",
+          sessionStorage.getItem("accessToken")
+        );
         navigate(`/profile/${res.user.id}`);
       } else {
         setError("Registro fallido (sin usuario o token).");

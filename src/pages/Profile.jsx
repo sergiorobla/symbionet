@@ -55,7 +55,7 @@ function uint8ArrayToBase64(uint8Array) {
 
 export default function Profile() {
   const location = useLocation();
-  const { user, setUser } = useUser();
+  const { user } = useUser();
   const { privateKey } = useKey();
   const {
     unlock,
@@ -68,21 +68,29 @@ export default function Profile() {
   const [newUsername, setNewUsername] = useState("");
   const [changingName, setChangingName] = useState(false);
   const [error, setError] = useState(null);
+  const [loadingPosts, setLoadingPosts] = useState(true);
 
   useEffect(() => {
     const token = sessionStorage.getItem("accessToken");
-    if (user?.public_key && location.pathname.startsWith("/profile") && token) {
+    // Solo fetch si user y token están listos
+    if (user?.public_key && token) {
+      setLoadingPosts(true);
       fetchPosts(user.public_key)
         .then((res) => {
-          if (res?.posts) setPosts(res.posts);
-          else setPosts([]);
+          setPosts(res?.posts || []);
+          setLoadingPosts(false);
         })
         .catch((err) => {
           console.error("fetchPosts error", err);
           setPosts([]);
+          setLoadingPosts(false);
         });
     }
-  }, [user?.public_key, location.pathname]);
+  }, [user?.public_key]);
+
+  if (!user || !sessionStorage.getItem("accessToken") || loadingPosts) {
+    return <p>Cargando perfil...</p>;
+  }
 
   const handleUsernameChange = async () => {
     setChangingName(true);
