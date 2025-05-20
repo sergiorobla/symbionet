@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { fetchPosts, createPost, deletePost, updateUsername } from "../api/api";
+import {
+  fetchPosts,
+  createPost,
+  deletePost,
+  updateUsername,
+  refreshToken,
+} from "../api/api";
+import { useNavigate } from "react-router-dom";
 import { signMessage } from "../api/cripto";
 import { useUser } from "../contexts/UserContext";
 import { useKey } from "../contexts/KeyContext";
@@ -8,6 +15,7 @@ import ExportIdentity from "../components/ExportIdentity";
 import { getPublicKeyFromStorage } from "../api/publicKeyUtils";
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [accessToken, setAccessTokenState] = useState(null);
   const { user, setUser } = useUser();
   const { privateKey } = useKey();
@@ -23,10 +31,29 @@ export default function Profile() {
   const [changingName, setChangingName] = useState(false);
   const [error, setError] = useState(null);
   const [loadingPosts, setLoadingPosts] = useState(true);
+  const [success, setSuccess] = useState(null);
 
   useEffect(() => {
-    const token = sessionStorage.getItem("accessToken");
-    if (token) setAccessTokenState(token);
+    const ensureAccessToken = async () => {
+      let token = sessionStorage.getItem("accessToken");
+
+      if (!token) {
+        const refreshed = await refreshToken();
+
+        if (refreshed) {
+          token = sessionStorage.getItem("accessToken");
+          console.log("🔁 Token renovado exitosamente");
+        } else {
+          alert("Tu sesión ha expirado. Inicia sesión de nuevo.");
+          navigate("/register");
+          return;
+        }
+      }
+
+      setAccessTokenState(token);
+    };
+
+    ensureAccessToken();
   }, []);
 
   useEffect(() => {
@@ -59,8 +86,7 @@ export default function Profile() {
       const res = await updateUsername(newUsername, publicKeyJwk);
       setUser(res.user);
       setNewUsername("");
-      // Opcional: mostrar mensaje de éxito
-      // setSuccess("Nombre de usuario actualizado correctamente.");
+      setSuccess("Nombre de usuario actualizado correctamente.");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -147,6 +173,7 @@ export default function Profile() {
         >
           Cambiar nombre
         </button>
+        {success && <p className="text-green-500 mt-1">{success}</p>}
         {error && <p className="text-red-600 mt-1">{error}</p>}
         <ExportIdentity />
       </div>
