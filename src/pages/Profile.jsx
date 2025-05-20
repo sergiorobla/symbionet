@@ -8,53 +8,8 @@ import { useUnlockPrivateKey } from "../hooks/useUnlockPrivateKey";
 import ExportIdentity from "../components/ExportIdentity";
 import { getPublicKeyFromStorage } from "../api/publicKeyUtils";
 
-// Convierte una firma raw (64 bytes) a formato DER (ASN.1)
-function rawToDer(rawSig) {
-  const r = rawSig.slice(0, 32);
-  const s = rawSig.slice(32, 64);
-
-  function trimLeadingZeros(buf) {
-    let i = 0;
-    while (i < buf.length - 1 && buf[i] === 0) i++;
-    return buf.slice(i);
-  }
-
-  function toDERInt(buf) {
-    let v = trimLeadingZeros(buf);
-    if (v[0] & 0x80) {
-      const res = new Uint8Array(v.length + 1);
-      res[0] = 0x00;
-      res.set(v, 1);
-      return res;
-    }
-    return v;
-  }
-
-  const rDER = toDERInt(r);
-  const sDER = toDERInt(s);
-  const totalLength = 2 + rDER.length + 2 + sDER.length;
-  const der = new Uint8Array(2 + totalLength);
-  der[0] = 0x30;
-  der[1] = totalLength;
-  der[2] = 0x02;
-  der[3] = rDER.length;
-  der.set(rDER, 4);
-  der[4 + rDER.length] = 0x02;
-  der[5 + rDER.length] = sDER.length;
-  der.set(sDER, 6 + rDER.length);
-  return der;
-}
-
-function uint8ArrayToBase64(uint8Array) {
-  let binary = "";
-  for (let i = 0; i < uint8Array.byteLength; i++) {
-    binary += String.fromCharCode(uint8Array[i]);
-  }
-  return btoa(binary);
-}
-
 export default function Profile() {
-  const location = useLocation();
+  const [accessToken, setAccessTokenState] = useState(null);
   const { user } = useUser();
   const { privateKey } = useKey();
   const {
@@ -72,8 +27,11 @@ export default function Profile() {
 
   useEffect(() => {
     const token = sessionStorage.getItem("accessToken");
-    // Solo fetch si user y token están listos
-    if (user?.public_key && token) {
+    if (token) setAccessTokenState(token);
+  }, []);
+
+  useEffect(() => {
+    if (user?.public_key && accessToken) {
       setLoadingPosts(true);
       fetchPosts(user.public_key)
         .then((res) => {
@@ -86,11 +44,7 @@ export default function Profile() {
           setLoadingPosts(false);
         });
     }
-  }, [user?.public_key]);
-
-  if (!user || !sessionStorage.getItem("accessToken") || loadingPosts) {
-    return <p>Cargando perfil...</p>;
-  }
+  }, [user?.public_key, accessToken]);
 
   const handleUsernameChange = async () => {
     setChangingName(true);
@@ -149,7 +103,6 @@ export default function Profile() {
         return;
       }
 
-      // Usa la función utilitaria robusta
       const publicKeyJwk = getPublicKeyFromStorage();
 
       if (!publicKeyJwk || !publicKeyJwk.kty) {
@@ -159,15 +112,10 @@ export default function Profile() {
         return;
       }
 
-      const keys = {
-        privateKey: privateKeyJwk,
-        publicKey: publicKeyJwk,
-      };
-
       const base64Signature = await signMessage(message, privateKeyJwk);
-
-      const res = await createPost(message, base64Signature, publicKeyJwk);
-      setPosts((prev) => [res.post, ...prev]);
+      await createPost(message, base64Signature, publicKeyJwk);
+      const updated = await fetchPosts(publicKeyJwk);
+      setPosts(updated.posts || []);
       setMessage("");
     } catch (err) {
       console.error("Error al crear post:", err);
@@ -175,7 +123,7 @@ export default function Profile() {
     }
   };
 
-  if (!user || !sessionStorage.getItem("accessToken")) {
+  if (!user || !accessToken || loadingPosts) {
     return <p>Cargando perfil...</p>;
   }
 
