@@ -124,7 +124,7 @@ export default function Register() {
           {JSON.stringify(user, null, 2)}
         </pre>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-sm mx-auto">
+        <form className="space-y-4 max-w-sm mx-auto">
           <label className="block">
             Nombre de usuario:
             <input
@@ -161,6 +161,7 @@ export default function Register() {
             type="submit"
             className="bg-blue-600 text-white px-4 py-2 rounded w-full"
             disabled={loading}
+            onSubmit={handleSubmit}
           >
             {loading ? "Registrando..." : "Generar identidad descentralizada"}
           </button>
