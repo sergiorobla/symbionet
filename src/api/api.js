@@ -161,10 +161,12 @@ export async function createPost(message, signature, publicKey) {
 }
 
 //Eliminar post
-export async function deletePost(postId) {
+export async function deletePost(postId, public_key) {
   try {
     const res = await fetch(`${BASE_URL}/posts/${postId}`, {
       method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ public_key }),
     });
     if (!res.ok) {
       const errorData = await res.json();
