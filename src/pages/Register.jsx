@@ -104,15 +104,6 @@ export default function Register() {
       } else {
         setError("Registro fallido (sin usuario o token).");
       }
-
-      if (res?.accessToken && res?.user) {
-        setAccessToken(res.accessToken); // NUEVO: guarda el token
-        setUser(res.user);
-        setPrivateKey(privateKey); // Guarda la clave privada en tu estado/contexto
-        localStorage.setItem("username", res.user.username);
-      } else {
-        setError("Registro fallido (sin usuario o token).");
-      }
     } catch (err) {
       console.error("Error al generar claves o registrar:", err);
       setError("Tu navegador no soporta generación de claves criptográficas.");
