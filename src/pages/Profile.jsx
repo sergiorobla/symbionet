@@ -108,7 +108,7 @@ export default function Profile() {
   const handleDelete = async (postId) => {
     if (window.confirm("¿Seguro quieres eliminar este post?")) {
       try {
-        await deletePost(postId, user.public_key);
+        await deletePost(postId, JSON.stringify(user.public_key));
         setPosts((prev) => prev.filter((post) => post.id !== postId));
       } catch (error) {
         alert("Error eliminando post: " + error.message);
