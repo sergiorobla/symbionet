@@ -52,6 +52,7 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    console.log("Entra en handleSubmit");
 
     if (parseInt(captchaAnswer, 10) !== captchaQuestion.answer) {
       setError("Respuesta incorrecta al CAPTCHA.");
