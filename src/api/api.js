@@ -1,26 +1,86 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "https://localhost:4000";
 
+// Manejo simple de accessToken en sessionStorage
+function getAccessToken() {
+  return sessionStorage.getItem("accessToken");
+}
+function setAccessToken(token) {
+  sessionStorage.setItem("accessToken", token);
+}
+function removeAccessToken() {
+  sessionStorage.removeItem("accessToken");
+}
+
+// Helper para peticiones autenticadas
+async function fetchWithAuth(url, options = {}) {
+  let token = getAccessToken();
+  let headers = {
+    ...(options.headers || {}),
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  let response = await fetch(url, {
+    ...options,
+    headers,
+    credentials: "include", // Para refresh token en cookies
+  });
+
+  // Si el token expiró, intenta refrescar y reintenta la petición
+  if (response.status === 401 || response.status === 403) {
+    const refreshed = await refreshToken();
+    if (refreshed) {
+      token = getAccessToken();
+      headers = {
+        ...headers,
+        Authorization: `Bearer ${token}`,
+      };
+      response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: "include",
+      });
+    } else {
+      removeAccessToken();
+      throw new Error("Sesión expirada. Por favor, inicia sesión de nuevo.");
+    }
+  }
+  return response;
+}
+
+// Llama al endpoint /refresh
+async function refreshToken() {
+  const resp = await fetch(`${BASE_URL}/refresh`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (resp.ok) {
+    const data = await resp.json();
+    if (data.accessToken) {
+      setAccessToken(data.accessToken);
+      return true;
+    }
+  }
+  return false;
+}
+
 export async function registerUser({
   public_key,
-  username,
   captchaQuestion,
   captchaAnswer,
 }) {
   const response = await fetch(`${BASE_URL}/register`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       public_key,
-      username,
       captchaQuestion,
       captchaAnswer,
     }),
+    credentials: "include",
   });
 
   const text = await response.text();
-
   if (!response.ok) {
     let errorMessage = "Error en el registro";
     try {
@@ -35,7 +95,9 @@ export async function registerUser({
   }
 
   try {
-    return text ? JSON.parse(text) : null;
+    const data = text ? JSON.parse(text) : null;
+    if (data && data.accessToken) setAccessToken(data.accessToken);
+    return data;
   } catch {
     return null;
   }
@@ -47,11 +109,10 @@ export async function updateUsername(newUsername, public_key) {
   console.log("URL completa:", `${BASE_URL}/username`);
   console.log("Body:", { newUsername, public_key });
 
-  const response = await fetch(`${BASE_URL}/username`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ newUsername, public_key }),
-  });
+const response = await fetchWithAuth(`${BASE_URL}/username`, {
+  method: "PUT",
+  body: JSON.stringify({ newUsername, public_key }),
+});
 
   const text = await response.text();
 
@@ -78,11 +139,11 @@ export async function updateUsername(newUsername, public_key) {
 // Obtener datos usuario
 export async function getMe(publicKey) {
   try {
-    const response = await fetch(`${BASE_URL}/me`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ public_key: publicKey }),
-    });
+const response = await fetchWithAuth(`${BASE_URL}/me`, {
+  method: "POST",
+  body: JSON.stringify({ public_key: publicKey }),
+});
+
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -100,11 +161,10 @@ export async function getMe(publicKey) {
 export async function fetchPosts(publicKey) {
   const pubkey =
     typeof publicKey === "string" ? JSON.parse(publicKey) : publicKey;
-  const response = await fetch(`${BASE_URL}/postsuser`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ public_key: pubkey }),
-  });
+const response = await fetchWithAuth(`${BASE_URL}/postsuser`, {
+  method: "POST",
+  body: JSON.stringify({ public_key: pubkey }),
+});
 
   const text = await response.text();
 
@@ -134,19 +194,18 @@ export async function fetchUserById(id) {
 
 // Obtener posts para el Home
 export async function fetchHomePosts() {
-  const response = await fetch(`${BASE_URL}/postshome`);
+  const response = await fetchWithAuth(`${BASE_URL}/postshome`, { method: "GET" });
   if (!response.ok) throw new Error("Error obteniendo posts del home");
   return await response.json();
 }
 
-// Crear post: enviamos message, firma base64 DER y clave pública (objeto)
+// Crear post: enviamos message, firma base64 DER y clave pÃºblica (objeto)
 export async function createPost(message, signature, publicKey) {
   try {
-    const res = await fetch(`${BASE_URL}/post`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, signature, publicKey }),
-    });
+const res = await fetchWithAuth(`${BASE_URL}/post`, {
+  method: "POST",
+  body: JSON.stringify({ message, signature, publicKey }),
+});
 
     if (!res.ok) {
       const errorData = await res.json();
@@ -163,11 +222,10 @@ export async function createPost(message, signature, publicKey) {
 //Eliminar post
 export async function deletePost(postId, public_key) {
   try {
-    const res = await fetch(`${BASE_URL}/posts/${postId}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ public_key }),
-    });
+const res = await fetchWithAuth(`${BASE_URL}/posts/${postId}`, {
+  method: "DELETE",
+  body: JSON.stringify({ public_key }),
+});
     if (!res.ok) {
       const errorData = await res.json();
       throw new Error(errorData.error || "Error eliminando post");

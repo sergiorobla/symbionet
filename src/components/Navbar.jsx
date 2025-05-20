@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import { useKey } from "../contexts/KeyContext";
+import { removeAccessToken } from "../api/auth";
 
 // Función para comprobar si hay identidad guardada
 function hasIdentity() {
@@ -14,6 +15,9 @@ export default function Navbar() {
   const identityExists = hasIdentity();
 
   const handleLogout = () => {
+    removeAccessToken();
+    localStorage.removeItem("encryptedPrivateKey");
+    localStorage.removeItem("symbionet_public_key");
     clearKey();
     setUser(null);
     navigate("/login");

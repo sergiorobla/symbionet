@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { registerUser, getMe } from "../api/api";
+import { setAccessToken } from "../api/auth";
 import { generateKeyPair, loadKeyPair } from "../api/cripto";
 import { useUser } from "../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
@@ -25,12 +26,11 @@ export default function Register() {
     userIdRef.current = user?.id;
   }, [user]);
 
-useEffect(() => {
-  if (user && user.id) {
-    navigate(`/profile/${user.id}`);
-  }
-}, [user, navigate]);
-
+  useEffect(() => {
+    if (user && user.id) {
+      navigate(`/profile/${user.id}`);
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     const checkStoredKeys = async () => {
@@ -53,15 +53,14 @@ useEffect(() => {
     e.preventDefault();
     setError("");
 
-    // Valida el CAPTCHA con la respuesta generada
     if (parseInt(captchaAnswer, 10) !== captchaQuestion.answer) {
       setError("Respuesta incorrecta al CAPTCHA.");
-      setCaptchaQuestion(generateRandomQuestion()); // Nueva pregunta si fallan
+      setCaptchaQuestion(generateRandomQuestion());
       setCaptchaAnswer("");
       return;
     }
-    if (!username || !password) {
-      setError("Usuario y contraseña requeridos.");
+    if (!password) {
+      setError("Contraseña requerida.");
       return;
     }
 
@@ -83,18 +82,21 @@ useEffect(() => {
         "encryptedPrivateKey",
         JSON.stringify(encryptedIdentity)
       );
+      localStorage.setItem("symbionet_public_key", JSON.stringify(publicKey));
+
       const res = await registerUser({
         public_key: publicKey,
-        username,
         captchaQuestion: captchaQuestion.question,
         captchaAnswer,
       });
 
-      if (res?.user) {
+      if (res?.accessToken && res?.user) {
+        setAccessToken(res.accessToken); // NUEVO: guarda el token
         setUser(res.user);
-        setPrivateKey(privateKey);
+        setPrivateKey(privateKey); // Guarda la clave privada en tu estado/contexto
+        localStorage.setItem("username", res.user.username);
       } else {
-        setError("Registro fallido (sin usuario).");
+        setError("Registro fallido (sin usuario o token).");
       }
     } catch (err) {
       console.error("Error al generar claves o registrar:", err);

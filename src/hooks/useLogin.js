@@ -3,6 +3,7 @@ import { useUser } from "../contexts/UserContext";
 import { useUnlockPrivateKey } from "./useUnlockPrivateKey";
 import { getMe } from "../api/api";
 import { useNavigate } from "react-router-dom";
+import { setAccessToken } from "../api/auth";
 
 export function useLogin() {
   const { setUser } = useUser();
@@ -71,13 +72,14 @@ export function useLogin() {
       // 3. Busca el usuario en el backend usando la clave pública
       const res = await getMe(publicKey);
 
-      if (res?.user) {
+      if (res?.accessToken && res?.user) {
+        setAccessToken(res.accessToken); // Guarda el accessToken
         setUser(res.user);
         navigate(`/profile/${res.user.username || res.user.id}`);
         setLoading(false);
         return true;
       } else {
-        setError("Usuario no encontrado.");
+        setError("Usuario no encontrado o sin token.");
         setLoading(false);
         return false;
       }

@@ -87,7 +87,6 @@ export default function Profile() {
     setChangingName(true);
     setError(null);
     try {
-      // Usa la función utilitaria robusta
       const publicKeyJwk = getPublicKeyFromStorage();
       if (!publicKeyJwk || !publicKeyJwk.kty) {
         alert(
@@ -98,6 +97,8 @@ export default function Profile() {
       const res = await updateUsername(newUsername, publicKeyJwk);
       setUser(res.user);
       setNewUsername("");
+      // Opcional: mostrar mensaje de éxito
+      // setSuccess("Nombre de usuario actualizado correctamente.");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -108,7 +109,7 @@ export default function Profile() {
   const handleDelete = async (postId) => {
     if (window.confirm("¿Seguro quieres eliminar este post?")) {
       try {
-        await deletePost(postId, JSON.stringify(user.public_key));
+        await deletePost(postId, user.public_key);
         setPosts((prev) => prev.filter((post) => post.id !== postId));
       } catch (error) {
         alert("Error eliminando post: " + error.message);

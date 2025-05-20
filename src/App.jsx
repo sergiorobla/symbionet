@@ -10,6 +10,7 @@ import Admin from "./pages/Admin.jsx";
 import Login from "./components/Login.jsx";
 import { registerUser, onUserDeleted } from "./api/socket.js";
 import { KeyProvider } from "./contexts/KeyContext.jsx";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function App() {
 
       alert("Tu cuenta ha sido eliminada por el administrador.");
 
-      navigate("/register"); // Redirige al registro (o cambia por "/login" si tienes)
+      navigate("/register");
     });
   }, []);
 
@@ -42,10 +43,39 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/community/:id" element={<Community />} />
-          <Route path="/project/:id" element={<Project />} />
+          {/* RUTAS PROTEGIDAS */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/:id"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/community/:id"
+            element={
+              <ProtectedRoute>
+                <Community />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/project/:id"
+            element={
+              <ProtectedRoute>
+                <Project />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </KeyProvider>
