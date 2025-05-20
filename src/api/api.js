@@ -18,10 +18,8 @@ async function fetchWithAuth(url, options = {}) {
   // SIEMPRE construye los headers manualmente y NUNCA uses spread de options.headers
   let headers = {
     "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`
   };
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   // Si el usuario pasó headers personalizados, añádelos (pero nunca sobrescribas Authorization)
   if (options.headers) {
