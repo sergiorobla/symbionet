@@ -96,7 +96,6 @@ export async function registerUser({
 
   try {
     const data = text ? JSON.parse(text) : null;
-    if (data && data.accessToken) setAccessToken(data.accessToken);
     return data;
   } catch {
     return null;
@@ -109,10 +108,10 @@ export async function updateUsername(newUsername, public_key) {
   console.log("URL completa:", `${BASE_URL}/username`);
   console.log("Body:", { newUsername, public_key });
 
-const response = await fetchWithAuth(`${BASE_URL}/username`, {
-  method: "PUT",
-  body: JSON.stringify({ newUsername, public_key }),
-});
+  const response = await fetchWithAuth(`${BASE_URL}/username`, {
+    method: "PUT",
+    body: JSON.stringify({ newUsername, public_key }),
+  });
 
   const text = await response.text();
 
@@ -139,11 +138,10 @@ const response = await fetchWithAuth(`${BASE_URL}/username`, {
 // Obtener datos usuario
 export async function getMe(publicKey) {
   try {
-const response = await fetchWithAuth(`${BASE_URL}/me`, {
-  method: "POST",
-  body: JSON.stringify({ public_key: publicKey }),
-});
-
+    const response = await fetchWithAuth(`${BASE_URL}/me`, {
+      method: "POST",
+      body: JSON.stringify({ public_key: publicKey }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -161,10 +159,10 @@ const response = await fetchWithAuth(`${BASE_URL}/me`, {
 export async function fetchPosts(publicKey) {
   const pubkey =
     typeof publicKey === "string" ? JSON.parse(publicKey) : publicKey;
-const response = await fetchWithAuth(`${BASE_URL}/postsuser`, {
-  method: "POST",
-  body: JSON.stringify({ public_key: pubkey }),
-});
+  const response = await fetchWithAuth(`${BASE_URL}/postsuser`, {
+    method: "POST",
+    body: JSON.stringify({ public_key: pubkey }),
+  });
 
   const text = await response.text();
 
@@ -194,7 +192,9 @@ export async function fetchUserById(id) {
 
 // Obtener posts para el Home
 export async function fetchHomePosts() {
-  const response = await fetchWithAuth(`${BASE_URL}/postshome`, { method: "GET" });
+  const response = await fetchWithAuth(`${BASE_URL}/postshome`, {
+    method: "GET",
+  });
   if (!response.ok) throw new Error("Error obteniendo posts del home");
   return await response.json();
 }
@@ -202,10 +202,10 @@ export async function fetchHomePosts() {
 // Crear post: enviamos message, firma base64 DER y clave pÃºblica (objeto)
 export async function createPost(message, signature, publicKey) {
   try {
-const res = await fetchWithAuth(`${BASE_URL}/post`, {
-  method: "POST",
-  body: JSON.stringify({ message, signature, publicKey }),
-});
+    const res = await fetchWithAuth(`${BASE_URL}/post`, {
+      method: "POST",
+      body: JSON.stringify({ message, signature, publicKey }),
+    });
 
     if (!res.ok) {
       const errorData = await res.json();
@@ -222,10 +222,10 @@ const res = await fetchWithAuth(`${BASE_URL}/post`, {
 //Eliminar post
 export async function deletePost(postId, public_key) {
   try {
-const res = await fetchWithAuth(`${BASE_URL}/posts/${postId}`, {
-  method: "DELETE",
-  body: JSON.stringify({ public_key }),
-});
+    const res = await fetchWithAuth(`${BASE_URL}/posts/${postId}`, {
+      method: "DELETE",
+      body: JSON.stringify({ public_key }),
+    });
     if (!res.ok) {
       const errorData = await res.json();
       throw new Error(errorData.error || "Error eliminando post");

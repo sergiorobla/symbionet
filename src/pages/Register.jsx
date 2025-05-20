@@ -90,6 +90,21 @@ export default function Register() {
         captchaAnswer,
       });
 
+      console.log("Respuesta del backend:", res);
+
+      if (res?.accessToken && res?.user) {
+        setAccessToken(res.accessToken);
+        console.log(
+          "Token guardado en sessionStorage:",
+          sessionStorage.getItem("accessToken")
+        );
+        setUser(res.user);
+        setPrivateKey(privateKey);
+        localStorage.setItem("username", res.user.username);
+      } else {
+        setError("Registro fallido (sin usuario o token).");
+      }
+
       if (res?.accessToken && res?.user) {
         setAccessToken(res.accessToken); // NUEVO: guarda el token
         setUser(res.user);
