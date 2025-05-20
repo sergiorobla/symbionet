@@ -94,7 +94,7 @@ export default function Register() {
       console.log("Respuesta del backend:", res);
 
       if (res?.accessToken && res?.user) {
-        console.log("Llamando a setAccessToken con:", res.accessToken);
+        console.log("Access token recibido en register:", res.accessToken);
         setAccessToken(res.accessToken);
         setUser(res.user);
         setPrivateKey(privateKey);
