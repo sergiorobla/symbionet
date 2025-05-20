@@ -14,16 +14,25 @@ function removeAccessToken() {
 // Helper para peticiones autenticadas
 async function fetchWithAuth(url, options = {}) {
   let token = getAccessToken();
+
+  // SIEMPRE construye los headers manualmente
   let headers = {
-    ...(options.headers || {}),
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
   };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  // LOGS para depurar
+  console.log("fetchWithAuth: URL:", url);
+  console.log("fetchWithAuth: token:", token);
+  console.log("fetchWithAuth: headers:", headers);
 
   let response = await fetch(url, {
     ...options,
     headers,
-    credentials: "include", // Para refresh token en cookies
+    credentials: "include",
   });
 
   // Si el token expiró, intenta refrescar y reintenta la petición
@@ -31,10 +40,7 @@ async function fetchWithAuth(url, options = {}) {
     const refreshed = await refreshToken();
     if (refreshed) {
       token = getAccessToken();
-      headers = {
-        ...headers,
-        Authorization: `Bearer ${token}`,
-      };
+      headers["Authorization"] = `Bearer ${token}`;
       response = await fetch(url, {
         ...options,
         headers,
