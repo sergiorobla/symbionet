@@ -70,7 +70,8 @@ export default function Profile() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (user?.public_key && location.pathname.startsWith("/profile")) {
+    const token = sessionStorage.getItem("accessToken");
+    if (user?.public_key && location.pathname.startsWith("/profile") && token) {
       fetchPosts(user.public_key)
         .then((res) => {
           if (res?.posts) setPosts(res.posts);
@@ -166,7 +167,9 @@ export default function Profile() {
     }
   };
 
-  if (!user) return <p>Cargando perfil...</p>;
+  if (!user || !sessionStorage.getItem("accessToken")) {
+    return <p>Cargando perfil...</p>;
+  }
 
   return (
     <div className="p-4">

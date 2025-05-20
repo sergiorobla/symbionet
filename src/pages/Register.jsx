@@ -27,12 +27,6 @@ export default function Register() {
   }, [user]);
 
   useEffect(() => {
-    if (user && user.id) {
-      navigate(`/profile/${user.id}`);
-    }
-  }, [user, navigate]);
-
-  useEffect(() => {
     const checkStoredKeys = async () => {
       const keys = await loadKeyPair();
       if (!user && keys?.publicKey) {
@@ -103,6 +97,7 @@ export default function Register() {
         setUser(res.user);
         setPrivateKey(privateKey);
         localStorage.setItem("username", res.user.username);
+        navigate(`/profile/${res.user.id}`);
       } else {
         setError("Registro fallido (sin usuario o token).");
         console.log("No se recibió accessToken o user en la respuesta.");
