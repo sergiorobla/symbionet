@@ -91,7 +91,8 @@ export default function Register() {
         captchaAnswer,
       });
 
-      console.log("Respuesta del backend:", res);
+      console.log("✅ accessToken recibido:", res?.accessToken); // <-- ESTA ES LA LÍNEA NUEVA
+      console.log("Respuesta completa del backend:", res);
 
       if (res?.accessToken && res?.user) {
         console.log("Access token recibido en register:", res.accessToken);
