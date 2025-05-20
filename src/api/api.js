@@ -15,15 +15,25 @@ function removeAccessToken() {
 async function fetchWithAuth(url, options = {}) {
   let token = getAccessToken();
 
-  // SIEMPRE construye los headers manualmente y NUNCA uses spread de options.headers
+  // ⛔ NUEVO: si el token no está, intenta refrescar manualmente antes de la primera petición
+  if (!token) {
+    const refreshed = await refreshToken();
+    if (refreshed) {
+      token = getAccessToken();
+    } else {
+      console.warn("No hay token, y refresh falló.");
+    }
+  }
+
+  // Construir headers
   let headers = {
     "Content-Type": "application/json",
   };
+
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  // Si el usuario pasó headers personalizados, añádelos (pero nunca sobrescribas Authorization)
   if (options.headers) {
     for (const [k, v] of Object.entries(options.headers)) {
       if (k.toLowerCase() !== "authorization") {
@@ -42,7 +52,7 @@ async function fetchWithAuth(url, options = {}) {
     credentials: "include",
   });
 
-  // Refresh si hace falta
+  // Reintento si el token expiró
   if (response.status === 401 || response.status === 403) {
     const refreshed = await refreshToken();
     if (refreshed) {
@@ -58,11 +68,12 @@ async function fetchWithAuth(url, options = {}) {
       throw new Error("Sesión expirada. Por favor, inicia sesión de nuevo.");
     }
   }
+
   return response;
 }
 
 // Llama al endpoint /refresh
-async function refreshToken() {
+export async function refreshToken() {
   const resp = await fetch(`${BASE_URL}/refresh`, {
     method: "POST",
     credentials: "include",

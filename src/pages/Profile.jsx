@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
 import { fetchPosts, createPost, deletePost, updateUsername } from "../api/api";
 import { signMessage } from "../api/cripto";
 import { useUser } from "../contexts/UserContext";
@@ -10,7 +9,7 @@ import { getPublicKeyFromStorage } from "../api/publicKeyUtils";
 
 export default function Profile() {
   const [accessToken, setAccessTokenState] = useState(null);
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const { privateKey } = useKey();
   const {
     unlock,
