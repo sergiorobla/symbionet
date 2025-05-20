@@ -92,6 +92,7 @@ export default function Register() {
 
       console.log("Respuesta del backend:", res);
 
+      console.log("Respuesta del backend:", res);
       if (res?.accessToken && res?.user) {
         setAccessToken(res.accessToken);
         console.log(
@@ -103,6 +104,7 @@ export default function Register() {
         localStorage.setItem("username", res.user.username);
       } else {
         setError("Registro fallido (sin usuario o token).");
+        console.log("No se recibió accessToken o user en la respuesta.");
       }
     } catch (err) {
       console.error("Error al generar claves o registrar:", err);
