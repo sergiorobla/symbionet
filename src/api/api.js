@@ -15,16 +15,23 @@ function removeAccessToken() {
 async function fetchWithAuth(url, options = {}) {
   let token = getAccessToken();
 
-  // SIEMPRE construye los headers manualmente
+  // SIEMPRE construye los headers manualmente y NUNCA uses spread de options.headers
   let headers = {
     "Content-Type": "application/json",
-    ...(options.headers || {}),
   };
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  // LOGS para depurar
+  // Si el usuario pasó headers personalizados, añádelos (pero nunca sobrescribas Authorization)
+  if (options.headers) {
+    for (const [k, v] of Object.entries(options.headers)) {
+      if (k.toLowerCase() !== "authorization") {
+        headers[k] = v;
+      }
+    }
+  }
+
   console.log("fetchWithAuth: URL:", url);
   console.log("fetchWithAuth: token:", token);
   console.log("fetchWithAuth: headers:", headers);
@@ -35,7 +42,7 @@ async function fetchWithAuth(url, options = {}) {
     credentials: "include",
   });
 
-  // Si el token expiró, intenta refrescar y reintenta la petición
+  // Refresh si hace falta
   if (response.status === 401 || response.status === 403) {
     const refreshed = await refreshToken();
     if (refreshed) {

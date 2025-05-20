@@ -52,20 +52,26 @@ export default function Register() {
       setError("Respuesta incorrecta al CAPTCHA.");
       setCaptchaQuestion(generateRandomQuestion());
       setCaptchaAnswer("");
+      console.log("Captcha incorrecto");
       return;
     }
     if (!password) {
       setError("Contraseña requerida.");
+      console.log("Contraseña requerida");
       return;
     }
 
     setLoading(true);
     try {
       const { publicKey, privateKey } = await generateKeyPair();
+      console.log("Claves generadas:", publicKey, privateKey);
+
       const encrypted = await encryptPrivateKey(
         JSON.stringify(privateKey),
         password
       );
+      console.log("Clave privada cifrada:", encrypted);
+
       const encryptedIdentity = {
         ciphertext: encrypted.ciphertext || encrypted.data,
         iv: encrypted.iv,
@@ -87,14 +93,14 @@ export default function Register() {
 
       console.log("Respuesta del backend:", res);
 
-      console.log("Respuesta del backend:", res);
       if (res?.accessToken && res?.user) {
+        console.log("Llamando a setAccessToken con:", res.accessToken);
         setAccessToken(res.accessToken);
         setUser(res.user);
         setPrivateKey(privateKey);
         localStorage.setItem("username", res.user.username);
         console.log(
-          "Antes de navegar, token:",
+          "Después de setAccessToken:",
           sessionStorage.getItem("accessToken")
         );
         navigate(`/profile/${res.user.id}`);
