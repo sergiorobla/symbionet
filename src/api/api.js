@@ -1,4 +1,5 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "https://localhost:4000";
+import { normalizeJwk } from "./publicKeyUtils";
 
 // Manejo simple de accessToken en sessionStorage
 function getAccessToken() {
@@ -244,21 +245,19 @@ export async function createPost(message, signature, publicKey) {
 }
 
 //Eliminar post
-export async function deletePost(postId, public_key) {
-  try {
-    const res = await fetchWithAuth(`${BASE_URL}/posts/${postId}`, {
-      method: "DELETE",
-      body: JSON.stringify({ public_key }),
-    });
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.error || "Error eliminando post");
-    }
-    return await res.json();
-  } catch (error) {
-    console.error("Error en deletePost:", error);
-    throw error;
+
+export async function deletePost(postId, publicKeyJwk) {
+  const normalizedKey = normalizeJwk(publicKeyJwk);
+  const res = await fetchWithAuth(`${BASE_URL}/posts/${postId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ public_key: JSON.parse(normalizedKey) }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Error eliminando post");
   }
+  return await res.json();
 }
 
 // Obtener data del admin con credenciales

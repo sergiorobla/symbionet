@@ -31,3 +31,11 @@ export function getPublicKeyFromStorage() {
   // 4. Si no la encuentra, retorna null
   return null;
 }
+
+export function normalizeJwk(jwk) {
+  const ordered = {};
+  Object.keys(jwk)
+    .sort()
+    .forEach((k) => (ordered[k] = jwk[k]));
+  return JSON.stringify(ordered);
+}

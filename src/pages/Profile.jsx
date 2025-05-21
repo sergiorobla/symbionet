@@ -72,17 +72,21 @@ export default function Profile() {
     }
   }, [user?.public_key, accessToken]);
 
+  const getValidPublicKey = () => {
+    const key = getPublicKeyFromStorage();
+    if (!key || !key.kty) {
+      alert("Clave pública inválida o no encontrada. Vuelve a iniciar sesión.");
+      return null;
+    }
+    return key;
+  };
+
   const handleUsernameChange = async () => {
     setChangingName(true);
     setError(null);
     try {
-      const publicKeyJwk = getPublicKeyFromStorage();
-      if (!publicKeyJwk || !publicKeyJwk.kty) {
-        alert(
-          "Clave pública inválida o no encontrada. Vuelve a iniciar sesión."
-        );
-        return;
-      }
+      const publicKeyJwk = getValidPublicKey();
+      if (!publicKeyJwk) return;
       const res = await updateUsername(newUsername, publicKeyJwk);
       setUser(res.user);
       setNewUsername("");
@@ -97,7 +101,10 @@ export default function Profile() {
   const handleDelete = async (postId) => {
     if (window.confirm("¿Seguro quieres eliminar este post?")) {
       try {
-        await deletePost(postId, user.public_key);
+        const publicKeyJwk = getValidPublicKey();
+        if (!publicKeyJwk) return;
+
+        await deletePost(postId, publicKeyJwk);
         setPosts((prev) => prev.filter((post) => post.id !== postId));
       } catch (error) {
         alert("Error eliminando post: " + error.message);
@@ -128,14 +135,8 @@ export default function Profile() {
         return;
       }
 
-      const publicKeyJwk = getPublicKeyFromStorage();
-
-      if (!publicKeyJwk || !publicKeyJwk.kty) {
-        alert(
-          "Clave pública inválida o no encontrada. Vuelve a iniciar sesión."
-        );
-        return;
-      }
+      const publicKeyJwk = getValidPublicKey();
+      if (!publicKeyJwk) return;
 
       const base64Signature = await signMessage(message, privateKeyJwk);
       await createPost(message, base64Signature, publicKeyJwk);
