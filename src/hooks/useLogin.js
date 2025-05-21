@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useUser } from "../contexts/UserContext";
 import { useUnlockPrivateKey } from "./useUnlockPrivateKey";
-import { getMe } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import { setAccessToken } from "../api/auth";
 
@@ -70,24 +69,31 @@ export function useLogin() {
     setLoading(true);
     try {
       // 3. Busca el usuario en el backend usando la clave pública
-      const res = await getMe(publicKey);
+      const res = await fetch(`${BASE_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ public_key: publicKey }),
+        credentials: "include",
+      });
 
-      if (res?.accessToken && res?.user) {
-        setAccessToken(res.accessToken); // Guarda el accessToken
-        setUser(res.user);
-        navigate(`/profile/${res.user.username || res.user.id}`);
+      const data = await res.json();
+
+      if (res.ok && data.accessToken && data.user) {
+        setAccessToken(data.accessToken);
+        setUser(data.user);
+        navigate(`/profile/${data.user.username || data.user.id}`);
         setLoading(false);
         return true;
       } else {
-        setError("Usuario no encontrado o sin token.");
+        setError(data.error || "Usuario no encontrado o sin token.");
         setLoading(false);
         return false;
       }
     } catch (err) {
       setError("Error al obtener información del usuario.");
-      setLoading(false);
       console.error(err);
-      return false;
+    } finally {
+      setLoading(false); // 🔁 Siempre se ejecuta
     }
   };
 
