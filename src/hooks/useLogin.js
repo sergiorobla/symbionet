@@ -26,23 +26,21 @@ export function useLogin() {
       return false;
     }
 
-    // 2. Obtén la clave pública de forma robusta
+    // 2. Intenta obtener la clave pública desde localStorage
     let publicKey = null;
-
-    // Intenta extraerla de encryptedPrivateKey (nuevo método)
     const encrypted = localStorage.getItem("encryptedPrivateKey");
     if (encrypted) {
       try {
         const parsed = JSON.parse(encrypted);
-        if (parsed.publicKeyJwk) {
+        if (parsed?.publicKeyJwk?.kty) {
           publicKey = parsed.publicKeyJwk;
         }
       } catch (e) {
-        // Si hay error al parsear, pasa al siguiente método
+        console.error("Error al parsear encryptedPrivateKey:", e);
       }
     }
 
-    // Si no la encuentra, busca en publicKey (legacy)
+    // Fallbacks legacy
     if (!publicKey) {
       const publicStr = localStorage.getItem("publicKey");
       if (publicStr) {
@@ -51,8 +49,6 @@ export function useLogin() {
         } catch (e) {}
       }
     }
-
-    // Si aún no la encuentra, busca en symbionet_public_key (más legacy)
     if (!publicKey) {
       const legacyStr = localStorage.getItem("symbionet_public_key");
       if (legacyStr) {
@@ -63,13 +59,12 @@ export function useLogin() {
     }
 
     if (!publicKey) {
-      setError("No se encontró la clave pública.");
+      setError("No se encontró la clave pública. ¿Ya importaste tu identidad?");
       return false;
     }
 
     setLoading(true);
     try {
-      // 3. Busca el usuario en el backend usando la clave pública
       const res = await fetch(`${BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -83,21 +78,19 @@ export function useLogin() {
         setAccessToken(data.accessToken);
         setUser(data.user);
         navigate(`/profile/${data.user.username || data.user.id}`);
-        setLoading(false);
         return true;
       } else {
         setError(data.error || "Usuario no encontrado o sin token.");
-        setLoading(false);
         return false;
       }
     } catch (err) {
       setError("Error al obtener información del usuario.");
       console.error(err);
+      return false;
     } finally {
-      setLoading(false); // 🔁 Siempre se ejecuta
+      setLoading(false);
     }
   };
 
-  // Devuelve el método y los estados para usar en el formulario
   return { login, error, loading: loading || unlocking };
 }

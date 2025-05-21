@@ -16,8 +16,6 @@ export default function Navbar() {
 
   const handleLogout = () => {
     removeAccessToken();
-    localStorage.removeItem("encryptedPrivateKey");
-    localStorage.removeItem("symbionet_public_key");
     clearKey();
     setUser(null);
     navigate("/login");
