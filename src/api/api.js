@@ -93,6 +93,7 @@ export async function registerUser({
   public_key,
   captchaQuestion,
   captchaAnswer,
+  username,
 }) {
   const response = await fetch(`${BASE_URL}/register`, {
     method: "POST",
@@ -101,6 +102,7 @@ export async function registerUser({
       public_key,
       captchaQuestion,
       captchaAnswer,
+      username,
     }),
     credentials: "include",
   });

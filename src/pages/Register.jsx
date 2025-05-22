@@ -89,6 +89,7 @@ export default function Register() {
         public_key: publicKey,
         captchaQuestion: captchaQuestion.question,
         captchaAnswer,
+        username,
       });
 
       console.log("✅ accessToken recibido:", res?.accessToken); // <-- ESTA ES LA LÍNEA NUEVA
