@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { deleteUserAdmin, deletePostAdmin } from "../api/api";
 const BASE_URL = import.meta.env.VITE_API_URL || "https://localhost:4000";
+
 export default function Admin() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [data, setData] = useState(null); // { users: [...], posts: [...] }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -11,7 +10,8 @@ export default function Admin() {
   async function handleDeleteUser(id) {
     if (!confirm("¿Eliminar usuario?")) return;
     try {
-      await deleteUserAdmin(id, username, password);
+      const token = sessionStorage.getItem("accessToken");
+      await deleteUserAdmin(id, token);
       setData((prev) => ({
         ...prev,
         users: prev.users.filter((u) => u.id !== id),
@@ -24,7 +24,8 @@ export default function Admin() {
   async function handleDeletePost(id) {
     if (!confirm("¿Eliminar post?")) return;
     try {
-      await deletePostAdmin(id, username, password);
+      const token = sessionStorage.getItem("accessToken");
+      await deletePostAdmin(id, token);
       setData((prev) => ({
         ...prev,
         posts: prev.posts.filter((p) => p.id !== id),
@@ -41,19 +42,20 @@ export default function Admin() {
     setData(null);
 
     try {
+      const token = sessionStorage.getItem("accessToken");
+
       const response = await fetch(`${BASE_URL}/admin/data`, {
         headers: {
-          Authorization: "Basic " + btoa(username + ":" + password),
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
-          setError("Acceso denegado. Credenciales incorrectas.");
+        if (response.status === 401 || response.status === 403) {
+          setError("No autorizado. ¿Estás logueado como admin?");
         } else {
           setError("Error al obtener datos.");
         }
-        setLoading(false);
         return;
       }
 
@@ -74,38 +76,12 @@ export default function Admin() {
           style={{ marginBottom: 20 }}
           className="flex flex-col items-center"
         >
-          <div>
-            <label className="flex flex-col">
-              Usuario{" "}
-              <input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="text-black border border-black px-1 rounded"
-                required
-                autoComplete="username"
-              />
-            </label>
-          </div>
-          <div>
-            <label className="flex flex-col">
-              Contraseña{" "}
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="text-black border border-black mb-3 px-1 rounded"
-                required
-                autoComplete="current-password"
-              />
-            </label>
-          </div>
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-500 h-8 rounded"
-            style={{ width: "100px" }}
+            className="bg-blue-600 hover:bg-blue-500 h-8 rounded text-white px-4"
           >
-            {loading ? "Cargando..." : "Ingresar"}
+            {loading ? "Cargando..." : "Ver panel de admin"}
           </button>
         </form>
       )}
@@ -114,7 +90,7 @@ export default function Admin() {
 
       {data && (
         <>
-          <h3>Usuarios</h3>
+          <h3 className="text-xl font-bold mt-6 mb-2">Usuarios</h3>
           <ul>
             {data.users.map((user) => (
               <li
@@ -134,7 +110,7 @@ export default function Admin() {
             ))}
           </ul>
 
-          <h3>Posts</h3>
+          <h3 className="text-xl font-bold mt-6 mb-2">Posts</h3>
           <ul>
             {data.posts.map((post) => (
               <li
@@ -158,12 +134,11 @@ export default function Admin() {
           <button
             onClick={() => {
               setData(null);
-              setUsername("");
-              setPassword("");
               setError(null);
             }}
+            className="mt-4 text-white bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded"
           >
-            Cerrar sesión
+            Cerrar sesión admin
           </button>
         </>
       )}

@@ -260,27 +260,13 @@ export async function deletePost(postId, publicKeyJwk) {
   return await res.json();
 }
 
-// Obtener data del admin con credenciales
-export async function fetchAdminData(username, password) {
-  const auth = "Basic " + btoa(username + ":" + password);
-  const res = await fetch(`${BASE_URL}/admin/data`, {
-    headers: { Authorization: auth },
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || "Error obteniendo datos");
-  }
-
-  return await res.json();
-}
-
-// Eliminar usuario
-export async function deleteUserAdmin(id, username, password) {
-  const auth = "Basic " + btoa(username + ":" + password);
+// Eliminar usuario (usando JWT)
+export async function deleteUserAdmin(id, token) {
   const res = await fetch(`${BASE_URL}/admin/users/${id}`, {
     method: "DELETE",
-    headers: { Authorization: auth },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!res.ok) {
@@ -291,12 +277,13 @@ export async function deleteUserAdmin(id, username, password) {
   return await res.json();
 }
 
-// Eliminar post
-export async function deletePostAdmin(id, username, password) {
-  const auth = "Basic " + btoa(username + ":" + password);
+// Eliminar post (usando JWT)
+export async function deletePostAdmin(id, token) {
   const res = await fetch(`${BASE_URL}/admin/posts/${id}`, {
     method: "DELETE",
-    headers: { Authorization: auth },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!res.ok) {
