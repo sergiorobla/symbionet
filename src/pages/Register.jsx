@@ -168,7 +168,7 @@ export default function Register() {
             <label className="block">
               {captchaQuestion.question}
               <input
-                type="text"
+                type="number"
                 value={captchaAnswer}
                 onChange={(e) => setCaptchaAnswer(e.target.value)}
                 required
