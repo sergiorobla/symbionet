@@ -119,7 +119,7 @@ export default function Agora() {
                 key={post.id}
               >
                 <p className="text-xl font-semibold">{post.username}</p>
-                <pre className="bg-blue-100 p-2 rounded my-2">
+                <pre className="bg-blue-100 p-2 rounded my-2 whitespace-pre-wrap break-words">
                   {post.content}
                 </pre>
                 <small className="pl-2 text-gray-600">

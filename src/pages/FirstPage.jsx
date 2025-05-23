@@ -18,7 +18,7 @@ export default function FirstPage() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen w-full items-center justify-center gap-8 px-4 md:px-[15vw] py-8">
+    <div className="flex flex-col md:flex-row h-full md:flex-1 w-full items-center justify-center gap-8 px-4 md:px-[15vw] py-8">
       {/* Descripción */}
       <div className="text-center md:text-left md:w-1/2">
         <h1 className="text-slate-300 text-4xl md:text-5xl mb-4">
@@ -68,7 +68,7 @@ export default function FirstPage() {
         {!hasIdentity() && (
           <Link
             to="/register"
-            className="bg-gray-800 hover:bg-gray-700 p-2 rounded text-white text-center"
+            className="bg-gray-800 hover:bg-gray-700 p-2 rounded text-white text-center !mt-0"
           >
             Registro
           </Link>

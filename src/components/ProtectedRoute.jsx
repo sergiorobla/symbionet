@@ -8,6 +8,6 @@ export default function ProtectedRoute({ children }) {
     // Si quieres, puedes mostrar un spinner aquí
     // return <Spinner />;
   }
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) return <Navigate to="/" replace />;
   return children;
 }

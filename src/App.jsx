@@ -9,34 +9,29 @@ import Register from "./pages/Register";
 import Navbar from "./components/Navbar";
 import Admin from "./pages/Admin.jsx";
 import Login from "./components/Login.jsx";
-import { registerUser, onUserDeleted } from "./api/socket.js";
+import Footer from "./components/Footer.jsx";
 import { KeyProvider } from "./contexts/KeyContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { getAccessToken } from "./api/auth.js";
 import { refreshToken } from "./api/api.js";
+import { useUser } from "./contexts/UserContext";
 
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { shouldForceLogout, setUser } = useUser();
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      if (user?.id) {
-        registerUser(user.id);
-
-        onUserDeleted(() => {
-          localStorage.removeItem("user");
-          localStorage.removeItem("symbionet_private_key");
-          localStorage.removeItem("symbionet_public_key");
-
-          alert("Tu cuenta ha sido eliminada por el administrador.");
-          navigate("/register");
-        });
-      }
+    if (shouldForceLogout) {
+      localStorage.clear();
+      sessionStorage.clear();
+      setUser(null);
+      alert("Tu cuenta ha sido eliminada por el administrador.");
+      navigate("/register");
     }
+  }, [shouldForceLogout, navigate, setUser]);
 
+  useEffect(() => {
     const ensureAccessToken = async () => {
       const token = getAccessToken();
       if (!token) {
@@ -54,8 +49,7 @@ export default function App() {
 
   return (
     <KeyProvider>
-      <div className="min-h-screen bg-gray-900 text-white">
-        {/* Solo mostrar Navbar si NO estás en la ruta '/' */}
+      <div className="flex flex-col md:min-h-screen bg-gray-900 text-white">
         {location.pathname !== "/" && location.pathname !== "/register" && (
           <Navbar />
         )}
@@ -64,7 +58,6 @@ export default function App() {
           <Route path="/agora" element={<Agora />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          {/* RUTAS PROTEGIDAS */}
           <Route
             path="/admin"
             element={
@@ -98,6 +91,7 @@ export default function App() {
             }
           />
         </Routes>
+        <Footer />
       </div>
     </KeyProvider>
   );

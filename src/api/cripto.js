@@ -1,16 +1,11 @@
 import { decryptPrivateKey } from "./cryptoUtils";
 
-// Genera un par de claves ECDSA y las guarda en localStorage.
 export async function generateKeyPair() {
   const keyPair = await window.crypto.subtle.generateKey(
-    {
-      name: "ECDSA",
-      namedCurve: "P-256",
-    },
+    { name: "ECDSA", namedCurve: "P-256" },
     true,
     ["sign", "verify"]
   );
-
   const publicKeyJwk = await window.crypto.subtle.exportKey(
     "jwk",
     keyPair.publicKey
@@ -19,48 +14,27 @@ export async function generateKeyPair() {
     "jwk",
     keyPair.privateKey
   );
-
-  return {
-    publicKey: publicKeyJwk,
-    privateKey: privateKeyJwk,
-  };
+  return { publicKey: publicKeyJwk, privateKey: privateKeyJwk };
 }
 
-// Carga las claves almacenadas localmente, pide la contraseña y devuelve el par clave.
-export async function loadKeyPair() {
+export async function loadKeyPair(password) {
   try {
-    const encrypted = localStorage.getItem("encryptedPrivateKey");
+    const encryptedStr = localStorage.getItem("encryptedPrivateKey");
     const publicKeyStr = localStorage.getItem("symbionet_public_key");
-    if (!encrypted || !publicKeyStr) return null;
+    if (!encryptedStr || !publicKeyStr) return null;
 
-    const parsedEncrypted = JSON.parse(encrypted);
-    const password = prompt(
-      "Introduce tu contraseña para desbloquear tu identidad:"
-    );
-    const privateKeyJson = await decryptPrivateKey(parsedEncrypted, password);
-    let privateKey;
-    try {
-      privateKey = JSON.parse(privateKeyJson);
-    } catch (e) {
-      console.error(
-        "Error al parsear la clave privada desencriptada:",
-        privateKeyJson
-      );
-      throw e;
-    }
+    const encrypted = JSON.parse(encryptedStr);
+    const privateKeyJson = await decryptPrivateKey(encrypted, password);
+    const privateKey = JSON.parse(privateKeyJson);
+    const publicKey = JSON.parse(publicKeyStr);
 
-    return {
-      privateKey,
-      publicKey: JSON.parse(publicKeyStr),
-    };
+    return { privateKey, publicKey };
   } catch (e) {
     console.error("Error al desencriptar la clave:", e);
-    alert("Contraseña incorrecta o datos corruptos.");
     return null;
   }
 }
 
-// Convierte una firma RAW (r|s) de 64 bytes a DER ASN.1
 function rawToDer(rawSig) {
   const r = rawSig.slice(0, 32);
   const s = rawSig.slice(32, 64);
@@ -97,7 +71,6 @@ function rawToDer(rawSig) {
   return der;
 }
 
-// Convierte un Uint8Array a base64
 function uint8ArrayToBase64(uint8Array) {
   let binary = "";
   for (let i = 0; i < uint8Array.byteLength; i++) {
@@ -107,13 +80,8 @@ function uint8ArrayToBase64(uint8Array) {
 }
 
 export async function signMessage(message, privateJwk) {
-  // Protección extra
   if (typeof privateJwk === "string") {
-    try {
-      privateJwk = JSON.parse(privateJwk);
-    } catch (e) {
-      throw new Error("La clave privada no es un objeto JWK válido.");
-    }
+    privateJwk = JSON.parse(privateJwk);
   }
   if (!privateJwk.kty) {
     throw new Error("La clave privada JWK no tiene el campo 'kty'.");
@@ -121,35 +89,26 @@ export async function signMessage(message, privateJwk) {
   const privateKey = await window.crypto.subtle.importKey(
     "jwk",
     privateJwk,
-    {
-      name: "ECDSA",
-      namedCurve: "P-256",
-    },
+    { name: "ECDSA", namedCurve: "P-256" },
     false,
     ["sign"]
   );
-
-  const encoder = new TextEncoder();
-  const data = encoder.encode(message);
+  const data = new TextEncoder().encode(message);
   const rawSignature = await window.crypto.subtle.sign(
     { name: "ECDSA", hash: { name: "SHA-256" } },
     privateKey,
     data
   );
   const derSignature = rawToDer(new Uint8Array(rawSignature));
-  const base64Signature = uint8ArrayToBase64(derSignature);
-  return base64Signature;
+  return uint8ArrayToBase64(derSignature);
 }
 
-/**
- * Wrapper para obtener y usar la clave privada directamente.
- */
-export async function signMessageWithStoredKey(message) {
-  const keyPair = await loadKeyPair();
-  if (!keyPair || !keyPair.privateKey) {
+// ✅ ahora requiere password explícitamente
+export async function signMessageWithStoredKey(message, password) {
+  const keyPair = await loadKeyPair(password);
+  if (!keyPair?.privateKey) {
     console.error("Clave privada no cargada correctamente");
     return null;
   }
-
   return await signMessage(message, keyPair.privateKey);
 }

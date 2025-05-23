@@ -41,7 +41,6 @@ export default function Profile() {
 
         if (refreshed) {
           token = sessionStorage.getItem("accessToken");
-          console.log("🔁 Token renovado exitosamente");
         } else {
           alert("Tu sesión ha expirado. Inicia sesión de nuevo.");
           navigate("/register");
@@ -89,7 +88,6 @@ export default function Profile() {
       const res = await updateUsername(newUsername, publicKeyJwk);
       setUser(res.user);
       setNewUsername("");
-      setSuccess("Nombre de usuario actualizado correctamente.");
     } catch (err) {
       setError(err.message);
     } finally {

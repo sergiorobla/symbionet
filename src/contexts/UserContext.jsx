@@ -1,15 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { io } from "socket.io-client";
 
+// UserContext.jsx
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // Inicializa el usuario desde localStorage solo una vez
     const savedUser = localStorage.getItem("symbionet_user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  // Sincroniza el usuario con localStorage cada vez que cambie
+  const [shouldForceLogout, setShouldForceLogout] = useState(false);
+
   useEffect(() => {
     if (user) {
       localStorage.setItem("symbionet_user", JSON.stringify(user));
@@ -18,8 +20,27 @@ export const UserProvider = ({ children }) => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const socket = io(import.meta.env.VITE_API_URL, {
+      withCredentials: true,
+      transports: ["websocket"],
+    });
+
+    socket.emit("registerUser", user.id);
+
+    socket.on("userDeleted", (deletedUserId) => {
+      if (deletedUserId === user.id) {
+        setShouldForceLogout(true);
+      }
+    });
+
+    return () => socket.disconnect();
+  }, [user]);
+
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, shouldForceLogout }}>
       {children}
     </UserContext.Provider>
   );

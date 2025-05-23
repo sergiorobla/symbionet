@@ -43,10 +43,6 @@ async function fetchWithAuth(url, options = {}) {
     }
   }
 
-  console.log("fetchWithAuth: URL:", url);
-  console.log("fetchWithAuth: token:", token);
-  console.log("fetchWithAuth: headers:", headers);
-
   let response = await fetch(url, {
     ...options,
     headers,
@@ -131,10 +127,6 @@ export async function registerUser({
 
 //El usuario puede cambiar su nombre
 export async function updateUsername(newUsername, public_key) {
-  console.log("BASE_URL:", BASE_URL);
-  console.log("URL completa:", `${BASE_URL}/username`);
-  console.log("Body:", { newUsername, public_key });
-
   const response = await fetchWithAuth(`${BASE_URL}/username`, {
     method: "PUT",
     body: JSON.stringify({ newUsername, public_key }),

@@ -70,7 +70,7 @@ export default function ImportIdentity({ onImport }) {
     <div className="flex flex-col items-center">
       <label
         htmlFor="import-identity"
-        className="block mb-2 text-sm font-medium text-gray-700 cursor-pointer"
+        className="block mb-2 text-sm text-gray-500 hover:text-gray-400 cursor-pointer"
       >
         ¿Ya tienes una identidad exportada?
       </label>

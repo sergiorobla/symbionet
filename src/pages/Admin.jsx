@@ -95,7 +95,7 @@ export default function Admin() {
             {data.users.map((user) => (
               <li
                 key={user.id}
-                className="flex justify-between items-center mb-2"
+                className="flex justify-between items-center mb-2 p-2 hover:bg-gray-300 hover:text-black rounded"
               >
                 <span>
                   {user.username} (Reputación: {user.reputation})
@@ -115,7 +115,7 @@ export default function Admin() {
             {data.posts.map((post) => (
               <li
                 key={post.id}
-                className="flex justify-between items-center mb-2"
+                className="flex justify-between items-center mb-2 p-2 hover:bg-gray-300 hover:text-black rounded"
               >
                 <span>
                   <b>{post.username}</b>: {post.content}{" "}
