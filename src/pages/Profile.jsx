@@ -26,7 +26,6 @@ export default function Profile() {
   } = useUnlockPrivateKey();
 
   const [posts, setPosts] = useState([]);
-  const [message, setMessage] = useState("");
   const [newUsername, setNewUsername] = useState("");
   const [changingName, setChangingName] = useState(false);
   const [error, setError] = useState(null);
@@ -112,43 +111,6 @@ export default function Profile() {
     }
   };
 
-  const handlePost = async () => {
-    try {
-      let unlockedPrivateKey = privateKey;
-      if (!unlockedPrivateKey) {
-        const password = window.prompt(
-          "Introduce tu contraseña para firmar el post"
-        );
-        if (!password) return;
-        const ok = await unlock(password);
-        if (!ok) return;
-        unlockedPrivateKey = privateKey;
-      }
-
-      const privateKeyJwk =
-        typeof unlockedPrivateKey === "string"
-          ? JSON.parse(unlockedPrivateKey)
-          : unlockedPrivateKey;
-
-      if (!privateKeyJwk || !privateKeyJwk.kty) {
-        alert("Contraseña correcta.");
-        return;
-      }
-
-      const publicKeyJwk = getValidPublicKey();
-      if (!publicKeyJwk) return;
-
-      const base64Signature = await signMessage(message, privateKeyJwk);
-      await createPost(message, base64Signature, publicKeyJwk);
-      const updated = await fetchPosts(publicKeyJwk);
-      setPosts(updated.posts || []);
-      setMessage("");
-    } catch (err) {
-      console.error("Error al crear post:", err);
-      alert("Error al firmar o publicar post.");
-    }
-  };
-
   if (!user || !accessToken || loadingPosts) {
     return <p>Cargando perfil...</p>;
   }
@@ -180,20 +142,6 @@ export default function Profile() {
       </div>
 
       <p className="text-gray-700">Reputación: {user.reputation}</p>
-      <p className="text-xl">Aquí puedes escribir tus publicaciones.</p>
-
-      <textarea
-        className="w-full border p-2 rounded mb-2 text-black"
-        placeholder="Escribe un nuevo post..."
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      />
-      <button
-        onClick={handlePost}
-        className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1 rounded"
-      >
-        Publicar
-      </button>
 
       <h2 className="text-xl font-semibold mt-6 mb-2">Tus Publicaciones</h2>
       <div className="space-y-3">

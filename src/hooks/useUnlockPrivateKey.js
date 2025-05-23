@@ -18,13 +18,13 @@ export function useUnlockPrivateKey() {
     setError(null);
     if (!password) {
       setError("La contraseña es obligatoria.");
-      return false;
+      return null;
     }
 
     const encryptedStr = localStorage.getItem("encryptedPrivateKey");
     if (!encryptedStr) {
       setError("No hay clave privada guardada.");
-      return false;
+      return null;
     }
 
     setLoading(true);
@@ -34,11 +34,11 @@ export function useUnlockPrivateKey() {
       const privateKey = JSON.parse(privateKeyJson);
       setPrivateKey(privateKey);
       setLoading(false);
-      return true;
+      return privateKey; // ✅ ahora retornamos la clave
     } catch (err) {
       setError("Contraseña incorrecta o datos corruptos.");
       setLoading(false);
-      return false;
+      return null;
     }
   };
 

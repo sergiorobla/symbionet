@@ -18,20 +18,20 @@ export default function Navbar() {
     removeAccessToken();
     clearKey();
     setUser(null);
-    navigate("/login");
+    navigate("/");
   };
 
   return (
     <nav className="bg-white shadow px-4 py-2 flex justify-between items-center">
-      <Link to="/">
-        <h1 className="font-bold text-xl text-black">SymbioNet</h1>
+      <Link to="/agora">
+        <h1 className="font-bold text-xl text-black">thefacebook</h1>
       </Link>
 
       <div className="space-x-4 flex items-center">
         {!user && (
           <>
             <button
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/")}
               className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded text-white"
             >
               Iniciar sesión

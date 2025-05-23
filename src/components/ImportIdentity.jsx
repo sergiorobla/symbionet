@@ -67,10 +67,10 @@ export default function ImportIdentity({ onImport }) {
   };
 
   return (
-    <div className="mt-4">
+    <div className="flex flex-col items-center">
       <label
         htmlFor="import-identity"
-        className="block mb-2 text-sm font-medium text-gray-700"
+        className="block mb-2 text-sm font-medium text-gray-700 cursor-pointer"
       >
         ¿Ya tienes una identidad exportada?
       </label>
@@ -82,12 +82,6 @@ export default function ImportIdentity({ onImport }) {
         onChange={handleFileChange}
         id="import-identity"
       />
-      <button
-        onClick={() => fileInputRef.current.click()}
-        className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded text-white"
-      >
-        Importar identidad
-      </button>
     </div>
   );
 }

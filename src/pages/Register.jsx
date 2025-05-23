@@ -8,6 +8,10 @@ import { encryptPrivateKey } from "../api/cryptoUtils";
 import { useKey } from "../contexts/KeyContext";
 import generateRandomQuestion from "../functions/generateQuestion";
 
+function hasIdentity() {
+  return !!localStorage.getItem("encryptedPrivateKey");
+}
+
 export default function Register() {
   const { user, setUser } = useUser();
   const { setPrivateKey } = useKey();
@@ -25,6 +29,12 @@ export default function Register() {
   useEffect(() => {
     userIdRef.current = user?.id;
   }, [user]);
+
+  useEffect(() => {
+    if (hasIdentity()) {
+      navigate("/agora");
+    }
+  }, []);
 
   useEffect(() => {
     const checkStoredKeys = async () => {
@@ -105,7 +115,7 @@ export default function Register() {
           "Después de setAccessToken:",
           sessionStorage.getItem("accessToken")
         );
-        navigate(`/profile/${res.user.id}`);
+        navigate(`/agora`);
       } else {
         setError("Registro fallido (sin usuario o token).");
         console.log("No se recibió accessToken o user en la respuesta.");
@@ -119,12 +129,9 @@ export default function Register() {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Registro</h1>
+    <div className="pt-[25vh]">
       {user ? (
-        <pre className="bg-gray-100 rounded p-2 text-sm text-black">
-          {JSON.stringify(user, null, 2)}
-        </pre>
+        <p></p>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4 max-w-sm mx-auto">
           <label className="block">

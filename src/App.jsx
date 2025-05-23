@@ -1,6 +1,7 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import Home from "./pages/Home.jsx";
+import FirstPage from "./pages/FirstPage.jsx";
+import Agora from "./pages/Agora.jsx";
 import Community from "./pages/Community.jsx";
 import Project from "./pages/Project.jsx";
 import Profile from "./pages/Profile.jsx";
@@ -16,6 +17,7 @@ import { refreshToken } from "./api/api.js";
 
 export default function App() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -35,7 +37,6 @@ export default function App() {
       }
     }
 
-    // ✅ Refrescar token si está perdido
     const ensureAccessToken = async () => {
       const token = getAccessToken();
       if (!token) {
@@ -54,9 +55,13 @@ export default function App() {
   return (
     <KeyProvider>
       <div className="min-h-screen bg-gray-900 text-white">
-        <Navbar />
+        {/* Solo mostrar Navbar si NO estás en la ruta '/' */}
+        {location.pathname !== "/" && location.pathname !== "/register" && (
+          <Navbar />
+        )}
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<FirstPage />} />
+          <Route path="/agora" element={<Agora />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           {/* RUTAS PROTEGIDAS */}

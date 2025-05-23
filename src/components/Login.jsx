@@ -16,10 +16,9 @@ export default function Login() {
     <div className="flex flex-col items-center justify-center min-h-screen">
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-sm w-full"
+        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-sm w-full flex flex-col items-center space-y-4"
       >
-        <h2 className="text-2xl mb-4 font-bold text-center">Iniciar sesión</h2>
-        {/* Campo oculto para username */}
+        <img src="./icon.PNG" className="w-28" />
         <input
           type="text"
           name="username"

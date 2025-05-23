@@ -77,7 +77,7 @@ export function useLogin() {
       if (res.ok && data.accessToken && data.user) {
         setAccessToken(data.accessToken);
         setUser(data.user);
-        navigate(`/profile/${data.user.username || data.user.id}`);
+        navigate(`/agora`);
         return true;
       } else {
         setError(data.error || "Usuario no encontrado o sin token.");
