@@ -82,8 +82,6 @@ export default function Agora() {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Ágora</h1>
-
       {user && (
         <div className="mb-6">
           <p className="text-xl">

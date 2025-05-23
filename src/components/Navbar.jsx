@@ -22,25 +22,27 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow px-4 py-2 flex justify-between items-center">
-      <Link to="/agora">
+    <nav className="bg-white shadow px-4 py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+      {/* Logo */}
+      <Link to="/agora" className="text-center sm:text-left">
         <h1 className="font-bold text-xl text-black">thefacebook</h1>
       </Link>
 
-      <div className="space-x-4 flex items-center">
+      {/* Botones */}
+      <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 items-center text-center">
         {!user && (
           <>
             <button
               onClick={() => navigate("/")}
-              className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded text-white"
+              className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-white w-full sm:w-auto"
             >
               Iniciar sesión
             </button>
-            {/* Solo muestra el botón de registro si NO hay identidad */}
+
             {!identityExists && (
               <Link
                 to="/register"
-                className="bg-gray-800 hover:bg-gray-600 px-3 py-2 rounded text-white"
+                className="bg-gray-800 hover:bg-gray-600 px-4 py-2 rounded text-white w-full sm:w-auto"
               >
                 Registro
               </Link>
@@ -52,13 +54,14 @@ export default function Navbar() {
           <>
             <Link
               to={`/profile/${user.username || user.id}`}
-              className="bg-gray-800 hover:bg-gray-600 px-3 py-2 rounded text-white"
+              className="bg-gray-800 hover:bg-gray-600 px-4 py-2 rounded text-white w-full sm:w-auto"
             >
-              Perfil ({user?.username || "Usuario anónimo"})
+              Perfil ({user?.username || "Anónimo"})
             </Link>
+
             <button
               onClick={handleLogout}
-              className="ml-2 bg-red-600 hover:bg-red-500 px-3 py-2 rounded text-white"
+              className="bg-red-600 hover:bg-red-500 px-4 py-2 rounded text-white w-full sm:w-auto"
             >
               Cerrar sesión
             </button>

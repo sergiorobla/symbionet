@@ -146,7 +146,7 @@ export default function Profile() {
       <h2 className="text-xl font-semibold mt-6 mb-2">Tus Publicaciones</h2>
       <div className="space-y-3">
         {posts.length > 0 ? (
-          <div className="flex flex-col space-y-2 my-10 mx-10">
+          <div className="space-y-2">
             {posts.map((post) => (
               <div
                 key={post.id}
