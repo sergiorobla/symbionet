@@ -27,7 +27,7 @@ export default function App() {
       sessionStorage.clear();
       setUser(null);
       alert("Tu cuenta ha sido eliminada por el administrador.");
-      navigate("/register");
+      navigate("/");
     }
   }, [shouldForceLogout, navigate, setUser]);
 
